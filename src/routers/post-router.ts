@@ -5,7 +5,7 @@ import { tokenValidation } from '../middlewares/token-validation';
 const router = express.Router();
 
 
-router.get("/", async (req, res) => {
+router.get("/allposts", async (req, res) => {
     const { statusCode, statusMessage, data } = await getAllPosts();
     res.status(statusCode).send(data);
 });
