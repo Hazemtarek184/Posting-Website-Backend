@@ -22,7 +22,7 @@ export const addPost = async ({ title, content, username }: IPostElements) => {
             return { statusCode: 409, statusMessage: "Already Posted", data: "" };
         }
 
-        const newPost = { title, content, userId: userId._id };
+        const newPost = { title, content, userId: userId._id, username };
 
         const post = await postModel.create(newPost);
         post.save();
