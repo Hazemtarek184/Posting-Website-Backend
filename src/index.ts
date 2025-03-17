@@ -4,26 +4,44 @@ import mongoose from "mongoose";
 import userRouter from "./routers/user-router";
 import postRouter from "./routers/post-router";
 
+require('dotenv').config()
+const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
+
+
 const app = express();
-const PORT = 8000;
-export const secretKey = "638b4945467c15b337631b31301dd3c521cce229481bc54ff9b880c4142020bc6e22594e93861a3faea1c200fd7fbfa0f62146c063fc9426cc4111a4a9e33896";
+const PORT = process.env.PORT;
+const MONGOURI = process.env.MONGO_CONNECTION_URI;
+export const secretKey = process.env.JWT_SECRET_KEY;
 
 
 app.use(express.json());
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.URL_CORS_ORIGIN,
 }));
 
 app.use('/user', userRouter);
 app.use('/api/post', postRouter);
 
-mongoose.connect("mongodb://127.0.0.1:27017/PersonalBlog")
+if (!MONGOURI) {
+    console.error("Missing MONGO_CONNECTION_URI environment variable");
+    process.exit(1);
+}
+
+mongoose.connect(MONGOURI)
     .then(() => {
-        console.log("Connected to the database. ");
+        console.log("Connected to the database.");
     }).catch((err) => {
-        console.log(err);
+        console.error("Database connection error:", err);
+        process.exit(1);
     });
 
 app.listen(PORT, () => {
     console.log(`Listening to port ${PORT}. `);
+});
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });

@@ -23,9 +23,8 @@ export const addPost = async ({ title, content, username }: IPostElements) => {
         }
 
         const newPost = { title, content, userId: userId._id, username };
-
         const post = await postModel.create(newPost);
-        post.save();
+
         return { statusCode: 201, statusMessage: "Post Added", data: "" };
     }
     catch (err) {
@@ -60,7 +59,7 @@ export const getAllPosts = async () => {
     }
 }
 
-export const upVote = async (id: Schema.Types.ObjectId) => {
+export const upVote = async (id: Schema.Types.ObjectId, username: string) => {
     try {
         const found = await postModel.findOneAndUpdate(
             { _id: id },
@@ -68,18 +67,24 @@ export const upVote = async (id: Schema.Types.ObjectId) => {
             { new: true }
         );
 
-        if (!found) {
+        if (!found)
             return { statusCode: 404, statusMessage: "No Post Found", data: "" };
-        }
 
         const user = await userModel.findById(found.userId);
 
         if (!user)
             return { statusCode: 404, statusMessage: "No Post Found", data: "" };
 
+        const upvotingUser = await userModel.findOne({ username });
+
+        if (!upvotingUser)
+            return { statusCode: 404, statusMessage: "No Post Found", data: "" };
+
+        upvotingUser.upvotedPosts.push(id);
+
         console.log(user);
         user.newNotification.push(found.title);
-        user.save();
+        await user.save();
 
         return { statusCode: 200, statusMessage: "", data: found };
 

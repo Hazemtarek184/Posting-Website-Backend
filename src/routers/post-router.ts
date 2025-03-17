@@ -6,26 +6,46 @@ const router = express.Router();
 
 
 router.get("/allposts", async (req, res) => {
-    const { statusCode, statusMessage, data } = await getAllPosts();
-    res.status(statusCode).send(data);
+    try {
+        const { statusCode, statusMessage, data } = await getAllPosts();
+        res.status(statusCode).send(data);
+    } catch (err) {
+        console.error("Error :", err);
+        res.status(500).send({ err });
+    }
 });
 
-router.post("/upvote", async (req, res) => {
-    const { id } = req.body;
-    const { statusCode, statusMessage, data } = await upVote(id);
-    res.status(statusCode).send(data);
+router.post("/upvote", tokenValidation, async (req, res) => {
+    try {
+        const { id } = req.body;
+        const { statusCode, statusMessage, data } = await upVote(id, req.username || '');
+        res.status(statusCode).send(data);
+    } catch (err) {
+        console.error("Error :", err);
+        res.status(500).send({ err });
+    }
 });
 
 router.get("/user", tokenValidation, async (req, res) => {
-    const username: string = req.username || '';
-    const { statusCode, statusMessage, data } = await getAllPostsByUser(username);
-    res.status(statusCode).send(data);
+    try {
+        const username: string = req.username || '';
+        const { statusCode, statusMessage, data } = await getAllPostsByUser(username);
+        res.status(statusCode).send(data);
+    } catch (err) {
+        console.error("Error :", err);
+        res.status(500).send({ err });
+    }
 });
 
 router.post("/", async (req, res) => {
-    const { title, content, username } = req.body;
-    const { statusCode, statusMessage, data } = await addPost({ title, content, username });
-    res.status(statusCode).send(statusMessage);
+    try {
+        const { title, content, username } = req.body;
+        const { statusCode, statusMessage, data } = await addPost({ title, content, username });
+        res.status(statusCode).send(statusMessage);
+    } catch (err) {
+        console.error("Error :", err);
+        res.status(500).send({ err });
+    }
 });
 
 export default router;

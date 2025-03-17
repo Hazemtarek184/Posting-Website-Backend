@@ -27,15 +27,18 @@ export const tokenValidation = async (req: Request, res: Response, next: NextFun
         return;
     }
 
-    jwt.verify(token, secretKey, async (err, payload) => {
+    jwt.verify(token, secretKey || (() => { throw new Error("JWT_SECRET_KEY not defined") })(), async (err, payload) => {
         if (err || !payload) {
             res.status(401).send("Token Invalid");
             return;
         }
 
-        const userPayload = payload as { username: string, password: string };
+        const userPayload = payload as { username: string, userId: string };
 
-        const found = await userModel.findOne(userPayload);
+        const found = await userModel.findById(userPayload.userId);
+
+        if (!found)
+            return res.status(401).json({ message: "User no longer exists" });
 
         req.username = userPayload.username;
 
